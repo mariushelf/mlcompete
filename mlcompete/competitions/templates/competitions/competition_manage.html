@@ -1,0 +1,63 @@
+{% extends 'competitions/competition_base.html' %}
+{% load render_table from django_tables2 %}
+{% block content %}
+    <h1>Manage Competition</h1>
+    <h2>{{ competition.name }}</h2>
+    <div>
+        {{ competition.description }}
+    </div>
+    <a href={% url 'competition_update' pk=competition.pk %}>
+        <button type="button" class="btn btn-primary">
+            Edit details
+        </button>
+    </a>
+    <div>
+        <h2>Phases</h2>
+        {% for phase in competition.phases.all %}
+            <div class="row">
+                <div class="col-md-8 mb-3 text-center">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ phase.name }}
+                                {#                <a href={% url "phase_delete" competition=competition.pk pk=phase.pk %}>delete</a>#}
+                            </h5>
+                            <p class="card-body">
+                                {{ phase.description }}
+                            </p>
+                            <ul>
+                                <li class="list-group-item">
+                                    {% if phase.data_file %}
+                                        Data:
+                                        <a href={{ phase.data_file.url }}>{{ phase.data_file_name }}</a>
+                                    {% else %}
+                                        <i>No data.</i>
+                                    {% endif %}
+                                </li>
+                                <li class="list-group-item">
+                                    {% if phase.labels_file %}
+                                        Labels:
+                                        <a href={{ phase.labels_file.url }}>{{ phase.labels_file_name }}</a>
+                                    {% else %}
+                                        <i>No labels.</i>
+                                    {% endif %}
+                                </li>
+                                <ul>
+                                    <a class="btn btn-outline-primary"
+                                       href={% url "phase_update" competition=competition.pk pk=phase.pk %}>edit</a>
+                                    <a class="btn btn-primary"
+                                       href={% url "phase_upload_data" pk=phase.pk %}>upload
+                                        data</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            No phases yet.
+        {% endfor %}
+    </div>
+    <a href={% url 'phase_create' competition.pk %}>
+        <button type="button" class="btn btn-primary">
+            Add Phase
+        </button>
+    </a>
+{% endblock %}

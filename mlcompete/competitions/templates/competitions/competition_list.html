@@ -1,0 +1,11 @@
+{% extends "competitions/base.html" %}
+{% load render_table from django_tables2 %}
+
+{% block main %}
+    <h1>Competitions</h1>
+    {% render_table table %}
+    <a href={% url 'competition_create' %}>
+    <button type="button" class="btn btn-primary">
+    Create new competition
+    </button></a>
+{% endblock %}

@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "mlcompete"
+version = "0.1.0"
+description = "Machine Learning Competition Platform"
+authors = ["Marius Helf <marius.helf@enexis.nl>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/mariushelf/mlcompete"
+repository = "https://github.com/mariushelf/mlcompete"
+documentation = "https://mlcompete.readthedocs.io"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: Implementation :: PyPy"
+]
+
+[tool.poetry.dependencies]
+python = "^3.9,<4"
+importlib-metadata = {version="^4.11.3", python="<3.8"}
+
+# documentation
+# Due to the way poetry (and readthedocs) handle package extras (dependencies),
+# the doc dependencies must by located here, and not as dev-dependencies.
+# Once poetry 1.2.0 is released, this can be solved more elegantly.
+myst-parser = {version="^0.17.0", optional=true}
+Sphinx = {version="^4.5.0", optional=true}
+sphinx-autobuild = {version="^2021.3.14", optional=true}
+sphinx-panels = {version="^0.6.0", optional=true}
+sphinx-rtd-theme = {version="^1.0.0", optional=true}
+sphinxcontrib-mermaid = {version="^0.7.1", optional=true}
+Django = "^4.0.4"
+django-tables2 = "^2.4.1"
+django-bootstrap5 = "^21.3"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.1"
+pre-commit = "^2.8"
+tox = "^3.20.1"
+
+# deployment
+twine = "^4.0.0"
+
+[tool.poetry.extras]
+docs = [
+    "myst-parser",
+    'Sphinx',
+    'sphinx-autobuild',
+    'sphinx-panels',
+    'sphinx-rtd-theme',
+    'sphinxcontrib-mermaid'
+]
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[build-system]
+requires = ["poetry-core>=1.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,19 @@
+{% extends "competitions/base.html" %}
+{% load render_table from django_tables2 %}
+{% load django_bootstrap5 %}
+
+{% block main %}
+
+{% bootstrap_messages %}
+
+{# Display a form #}
+<form action={% url 'competition_create' %} method="post" class="form">
+  {% csrf_token %}
+
+  {% bootstrap_form form %}
+
+  {% bootstrap_button button_type="submit" content="OK" %}
+  {% bootstrap_button button_type="link" content="Cancel" button_class="btn-outline-primary" onclick="history.back()" %}
+
+</form>
+{% endblock main %}

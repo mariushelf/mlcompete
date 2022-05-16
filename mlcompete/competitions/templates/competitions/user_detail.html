@@ -1,0 +1,7 @@
+{% extends 'competitions/base.html' %}
+{% load render_table from django_tables2 %}
+{% block main %}
+    <h1>User {{ user }}</h1>
+    <h2>Submissions</h2>
+    {% render_table submissions %}
+{% endblock main %}
