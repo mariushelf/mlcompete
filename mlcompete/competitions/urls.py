@@ -9,12 +9,22 @@ urlpatterns = [
     path(
         "competitions/<int:competition>",
         views.LeaderBoardView.as_view(),
+        name="competition",
+    ),
+    path(
+        "competitions/<int:competition>/<int:phase>",
+        views.LeaderBoardView.as_view(),
+        name="leaderboard",
+    ),
+    path(
+        "competitions/<int:competition>/",
+        views.LeaderBoardView.as_view(),
         name="leaderboard",
     ),
     path(
         "competitions/<int:competition>/submit",
-        views.make_submission,
-        name="make_submission",
+        views.SubmissionCreate.as_view(),
+        name="submission_create",
     ),
     path(
         "users/<int:pk>/",
@@ -53,5 +63,10 @@ urlpatterns = [
         "datasets/<int:competition>/<int:phase>/<str:filename>",
         views.phase_download_data,
         name="phase_download_data",
+    ),
+    path(
+        "submissions/<int:pk>/script",
+        views.SubmissionScriptDetails.as_view(),
+        name="submission_script",
     ),
 ]

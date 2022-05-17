@@ -1,10 +1,9 @@
-import os
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Max
 from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, UpdateView
 from django_tables2 import SingleTableMixin, SingleTableView
@@ -15,6 +14,7 @@ from mlcompete.competitions.tables import (
     LeaderboardTable,
     UserSubmissionsTable,
 )
+from mlcompete.competitions.validators import SubmissionValidator
 
 
 def index(request):
@@ -34,26 +34,56 @@ class LeaderBoardView(SingleTableView):
     table_class = LeaderboardTable
 
     def get_queryset(self):
-        return (
-            Submission.objects.filter(competition_id=self.kwargs["competition"])
-            .order_by("-score")
-            .all()
-        )
+        phase_id = self.kwargs.get("phase")
+        if phase_id is None:
+            try:
+                phase_id = (
+                    Competition.objects.get(pk=self.kwargs["competition"])
+                    .phases.all()[0]
+                    .id
+                )
+            except IndexError:
+                phase_id = None
+
+        if phase_id:
+            return (
+                Submission.objects.filter(
+                    competition_id=self.kwargs["competition"], runs__phase_id=phase_id
+                )
+                .annotate(score=Max("runs__score"))  # TODO filter by phase
+                .order_by("-score")
+                .all()
+            )
+        else:
+            return []
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+
         competition_id = self.kwargs["competition"]
-        context["competition"] = Competition.objects.filter(pk=competition_id).get()
+        competition = get_object_or_404(Competition, pk=competition_id)
+        context["competition"] = competition
+
+        phase_id = self.kwargs.get("phase")
+        if phase_id is None:
+            try:
+                phase = competition.phases.all()[0]
+            except IndexError:
+                phase = None
+        else:
+            phase = get_object_or_404(Phase, pk=phase_id)
+        context["phase"] = phase
+
         return context
 
 
-@login_required
-def make_submission(request, competition: int):
-    print(request.user)
-    c = Competition.objects.get(pk=competition)
-    return render(
-        request, "competitions/make_submission.html", context={"competition": c}
-    )
+# @login_required
+# def make_submission(request, competition: int):
+#     print(request.user)
+#     c = Competition.objects.get(pk=competition)
+#     return render(
+#         request, "competitions/submission_form.html", context={"competition": c}
+#     )
 
 
 class UserProfile(
@@ -71,7 +101,6 @@ class UserProfile(
             .order_by("-timestamp")
             .all()
         )
-        print(submissions)
         return submissions
 
 
@@ -116,6 +145,33 @@ class PhaseUpdate(LoginRequiredMixin, PhaseEditMixin, UpdateView):
     pass
 
 
+class SubmissionCreate(LoginRequiredMixin, CreateView):
+    model = Submission
+    fields = ["label", "script_file"]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["competition"] = Competition.objects.get(pk=self.kwargs["competition"])
+        return context
+
+    def form_valid(self, form):
+        f = form.files["script_file"]
+        form.instance.script_file_name = f.name
+        form.instance.user = self.request.user
+        form.instance.competition_id = self.kwargs["competition"]
+        competition = get_object_or_404(Competition, pk=form.instance.competition_id)
+        form.instance.save()
+        for phase in competition.phases.all():
+            validator = SubmissionValidator(form.instance, phase)
+            validator.validate()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(
+            "competition", kwargs={"competition": self.object.competition_id}
+        )
+
+
 class PhaseUploadData(LoginRequiredMixin, UpdateView):
     model = Phase
     fields = ["data_file", "labels_file"]
@@ -129,7 +185,6 @@ class PhaseUploadData(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        print(os.getcwd())
         return reverse("competition_manage", kwargs={"pk": self.object.competition_id})
 
 
@@ -151,3 +206,15 @@ def phase_download_data(request, competition: int, phase: int, filename: str):
         return response
     else:
         return HttpResponseNotFound()
+
+
+class SubmissionScriptDetails(LoginRequiredMixin, DetailView):
+    model = Submission
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        with self.object.script_file.open("r") as f:
+            sourcecode = f.read()
+        context["sourcecode"] = sourcecode
+        context["competition"] = self.object.competition
+        return context

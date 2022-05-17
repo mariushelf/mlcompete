@@ -16,8 +16,25 @@ class CompetitionsTable(tables.Table):
 
 class LeaderboardTable(tables.Table):
     user = tables.Column()
+    label = tables.Column()
     score = tables.Column()
     timestamp = tables.Column()
+    script_file = tables.Column()
+
+    def render_user(self, value, record):
+        url = reverse("user_profile", args=(value.id,))
+        return format_html(
+            '<a href="{url:s}">{username:s}</a>', url=url, username=value.username
+        )
+
+    def render_script_file(self, value, record):
+        url = reverse("submission_script", args=(record.pk,))
+
+        return format_html(
+            '<a href="{url:s}">{filename:s}</a>',
+            url=url,
+            filename=record.script_file_name,
+        )
 
 
 class UserSubmissionsTable(tables.Table):

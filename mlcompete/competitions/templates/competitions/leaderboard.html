@@ -2,5 +2,21 @@
 {% load render_table from django_tables2 %}
 {% block content %}
     <h1>Leaderboard</h1>
+
+    {# Navbar #}
+    <nav class="nav nav-pills nav-justified">
+    {% for navphase in competition.phases.all %}
+        <a class="nav-link {% if navphase.id == phase.id %}active{% endif %}" href={% url 'leaderboard' competition.pk navphase.pk %}>{{navphase.name}}</a>
+    {% empty %}
+        <em>No phases yet.</em>
+    {% endfor %}
+    </nav>
+
+    <div class="container mt-3">
+    {% if not table.rows %}
+        <em>No submissions yet.</em>
+        {%  else %}
     {% render_table table %}
+    {% endif %}
+    </div>
 {% endblock %}

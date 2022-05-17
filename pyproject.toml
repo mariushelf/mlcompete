@@ -32,6 +32,8 @@ sphinxcontrib-mermaid = {version="^0.7.1", optional=true}
 Django = "^4.0.4"
 django-tables2 = "^2.4.1"
 django-bootstrap5 = "^21.3"
+pandas = "^1.4.2"
+scikit-learn = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.1"

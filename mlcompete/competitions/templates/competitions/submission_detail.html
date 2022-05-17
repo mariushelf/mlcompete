@@ -1,0 +1,16 @@
+{% extends "competitions/competition_base.html" %}
+{% load render_table from django_tables2 %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+    <h1>{{ object.label|default_if_none:"Submission" }}</h1>
+    Submission for <a href={% url 'competition' object.competition_id %}>{{ object.competition.name }}</a>
+    <p>
+    <em>by <a href={% url 'user_profile' object.user.id %}>{{ object.user }}</a></em>
+    </p>
+    <p>Score: {{ object.score|default_if_none:"pending..." }}</p>
+    <h2>Sourcecode</h2>
+    <div>
+        <pre><code class="language-python">{{ sourcecode|escape }}</code></pre>
+    </div>
+{% endblock content %}
